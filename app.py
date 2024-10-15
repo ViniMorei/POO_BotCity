@@ -1,6 +1,5 @@
 from flask import Flask, render_template, request
 
-from produto import Produto
 from bot import processar_produto
 
 app = Flask(__name__)
@@ -22,9 +21,9 @@ def processar_formulario():
         'qtd' : qtd
     }
     
-    resultado = processar_produto(produto)
+    processar_produto(produto)
     
-    return resultado
+    return formulario()
 
 
 if __name__ == "__main__":

@@ -1,10 +1,14 @@
+from faker import Faker
 from botcity.web import WebBot, Browser, By
 from botcity.maestro import *
-BotMaestroSDK.RAISE_NOT_CONNECTED = False
+from webdriver_manager.chrome import ChromeDriverManager
 
 from produto import Produto
 
-def criar_produto(nome: str, preco: float, qtd: int):
+BotMaestroSDK.RAISE_NOT_CONNECTED = False
+
+
+def instanciar_produto(nome: str, preco: float, qtd: int):
     return Produto(nome, preco, qtd)
 
 
@@ -18,46 +22,61 @@ def processar_produto(produto: dict):
     preco = produto['preco']
     qtd = produto['qtd']
     
-    return f'Produto: {nome} - Preço: R${preco} - Quantidade: {qtd}'
+    instanciar_produto(nome, preco, qtd)
+    print(f'INSTANCIADO: Produto: {nome} - Preço: R${preco} - Quantidade: {qtd}')
 
+
+def inventar_produtos(quantidade: range):
+    fake = Faker()
+    produtos = []
+    for _ in quantidade:
+        nome = f'{fake.word().capitalize()} {fake.word().capitalize()}'
+        preco = fake.random_number(digits=3)
+        qtd = fake.random_number(digits=2)
+        
+        produtos.append({"nome": nome, "preco": preco, "qtd": qtd})
+    
+    return produtos
+
+
+def preencher_forms(bot: WebBot, produtos: list):
+    for produto in produtos:
+        bot.browse('http://127.0.0.1:5000')
+        bot.wait(1000)
+        
+        input_nome = bot.find_element('//*[@id="nome"]', By.XPATH)
+        input_preco = bot.find_element('//*[@id="preco"]', By.XPATH)
+        input_qtd = bot.find_element('//*[@id="qtd"]', By.XPATH)
+        btn_submit = bot.find_element('/html/body/div/form/input[4]', By.XPATH)
+    
+        input_nome.send_keys(produto["nome"])
+        input_preco.send_keys(produto["preco"])
+        input_qtd.send_keys(produto["qtd"])
+        
+        btn_submit.click()
+        bot.wait(1000)
 
 def main():
     maestro = BotMaestroSDK.from_sys_args()
     execution = maestro.get_execution()
-
     print(f"Task ID is: {execution.task_id}")
     print(f"Task Parameters are: {execution.parameters}")
 
     bot = WebBot()
-
     bot.headless = False
+    bot.browser = Browser.CHROME
+    bot.driver_path = ChromeDriverManager().install()
 
-    # Uncomment to change the default Browser to Firefox
-    # bot.browser = Browser.FIREFOX
-
-    # Uncomment to set the WebDriver path
-    # bot.driver_path = "<path to your WebDriver binary>"
-
-    # Opens the BotCity website.
-    bot.browse("https://www.botcity.dev")
-
-    # Implement here your logic...
-    ...
-
-    # Wait 3 seconds before closing
-    bot.wait(3000)
-
-    # Finish and clean up the Web Browser
-    # You MUST invoke the stop_browser to avoid
-    # leaving instances of the webdriver open
-    bot.stop_browser()
-
-    # Uncomment to mark this task as finished on BotMaestro
-    # maestro.finish_task(
-    #     task_id=execution.task_id,
-    #     status=AutomationTaskFinishStatus.SUCCESS,
-    #     message="Task Finished OK."
-    # )
+    try:
+        produtos = inventar_produtos(range(5))
+        listar_produtos(produtos)
+        preencher_forms(bot, produtos)
+    
+    except Exception as ex:
+        print(ex)
+        
+    finally:
+        pass
 
 
 def not_found(label):
