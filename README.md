@@ -1,4 +1,4 @@
-# Bot de Cotação do Dólar
+# Botcity Orientado a Objetos - Produtos
 
 Este projeto utiliza o conceito de orientação a objetos em _Python_ e o _Flask_ para automatizar o preenchimento de um formulário _web_, criando um objeto da classe Produto toda vez que clica no botão de Enviar. Ao final da automação, teremos um txt com todos os objetos gerados
 
