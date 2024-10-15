@@ -22,8 +22,13 @@ def processar_produto(produto: dict):
     preco = produto['preco']
     qtd = produto['qtd']
     
-    instanciar_produto(nome, preco, qtd)
-    print(f'INSTANCIADO: Produto: {nome} - Preço: R${preco} - Quantidade: {qtd}')
+    obj_produto = instanciar_produto(nome, preco, qtd)
+    escrever_produto(obj_produto.__str__(), 'produtos.txt')
+    
+    
+def escrever_produto(produto: Produto, nome_arquivo: str):
+    with open(nome_arquivo, 'a') as arquivo:
+        arquivo.write(produto + '\n') 
 
 
 def inventar_produtos(quantidade: range):
@@ -68,7 +73,7 @@ def main():
     bot.driver_path = ChromeDriverManager().install()
 
     try:
-        produtos = inventar_produtos(range(5))
+        produtos = inventar_produtos(range(10))
         listar_produtos(produtos)
         preencher_forms(bot, produtos)
     
